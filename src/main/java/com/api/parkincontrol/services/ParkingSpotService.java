@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,6 +42,10 @@ public class ParkingSpotService {
 
     public Page<ParkingSpotModel> findAll(Pageable pageable) {
         return parkingSpotRepository.findAll(pageable);
+    }
+
+    public List<ParkingSpotModel> findAllSemPaginacao() {
+        return parkingSpotRepository.findAll();
     }
 
     public Optional<ParkingSpotModel> findById(UUID id) {

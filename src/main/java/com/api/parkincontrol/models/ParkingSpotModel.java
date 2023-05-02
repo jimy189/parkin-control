@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,7 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_PARKING_SPOT")
-public class ParkingSpotModel implements Serializable {
+public class ParkingSpotModel extends
+        RepresentationModel<ParkingSpotModel> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -117,4 +119,6 @@ public class ParkingSpotModel implements Serializable {
     public void setBlock(String block) {
         this.block = block;
     }
+
+
 }

@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.reactive.WebFluxLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,8 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -58,13 +65,31 @@ public class ParkingSpotController {
         return ResponseEntity.status(HttpStatus.OK).body(parkingSpotService.findAll(pageable));
     }
 
+    @GetMapping("/listado")
+    public ResponseEntity<List<ParkingSpotModel>> getAllParkingSpotsLista(){
+        List<ParkingSpotModel> parkList =
+                parkingSpotService.findAllSemPaginacao();
+        if(parkList.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }else {
+            for (ParkingSpotModel park : parkList) {
+                UUID id = park.getId();
+                park.add(linkTo(methodOn(ParkingSpotController.class).getOneParkingSpot(id)).withSelfRel());
+            }
+            return new ResponseEntity<List<ParkingSpotModel>>(parkList,HttpStatus.OK);
+        }
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getOneParkingSpot(@PathVariable(value = "id") UUID id){
+    public ResponseEntity<ParkingSpotModel> getOneParkingSpot(@PathVariable(value = "id") UUID id){
         Optional<ParkingSpotModel> parkingSpotModelOptional = parkingSpotService.findById(id);
         if (!parkingSpotModelOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Parking Spot not found.");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }else{
+            parkingSpotModelOptional.get().add(linkTo(methodOn(ParkingSpotController.class)
+                    .getAllParkingSpotsLista()).withSelfRel());
+            return new ResponseEntity<ParkingSpotModel>(parkingSpotModelOptional.get(), HttpStatus.OK);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(parkingSpotModelOptional.get());
     }
 
     @DeleteMapping("/{id}")
